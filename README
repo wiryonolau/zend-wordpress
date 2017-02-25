@@ -1,0 +1,32 @@
+=== ZF to Wordpress ===
+Contributors: zendmaniacs
+Tags: zend framework wordpress
+Requires at least: 3.7
+Tested up to: 4.7
+Stable tag: 3.2
+License: GPLv2 or later
+
+ZF to Wordpress allow to extend features of Wordpress using standard Zend Framework 2 Applicataion
+
+== Description ==
+
+ZF to Wordpress integrate Zend Framework 3 application into Wordpress transparent providing great MVC implementation into any Wordpress installation.
+
+Major features in ZF to Wordpress include:
+
+* Share in Wordpress admin panel widgets from ZF Application Service Manager config.
+* Route URLs which not processed by Wordpress to Zend Framewok application and put content in post body area.
+* Allow to create Wordpress admin panel menus right from Zend Framework Application config which processed by Zend Framework 3 controllers.
+
+== Installation ==
+
+Upload the ZF to Wordpress plugin to your blog, Activate it, and put Wordpress into /public directory of standard Zend Framework Application.
+
+== Changelog ==
+
+= 3.0 =
+*Release Date - 25 February 2017*
+
+* Upgraded plugin for Zend Framework 3 Application support.
+
+
