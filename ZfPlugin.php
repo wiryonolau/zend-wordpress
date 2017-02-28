@@ -90,7 +90,7 @@ class ZfPlugin
     {
         global $customTemplate, $wp_query;
 
-        if (empty($query) || $wp_query->is_404) {
+        if (empty($query) || !self::isVisiblePost($query) || $wp_query->is_404) {
 
             /* @var $response \Zend\Http\PhpEnvironment\Response */
             $response = self::runApplication();
@@ -128,6 +128,23 @@ class ZfPlugin
             }
         }
         return $query;
+    }
+
+    /**
+     * Check if post is HTML type
+     * @param array $query
+     * @return boolean
+     */
+    protected static function isVisiblePost($query) 
+    {
+        foreach($query as $post) {
+            switch($post->post_type) {
+                case 'post':
+                case 'page':
+                    return true;
+            }
+        } 
+        return false;
     }
 
     /**
