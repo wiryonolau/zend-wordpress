@@ -80,7 +80,7 @@ class WpAdminRoute implements RouteInterface
             return null;
         }
 
-        if (!empty($params['page'])) {
+        if (empty($params['page'])) {
             return null;
         }
 
