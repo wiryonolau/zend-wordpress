@@ -93,7 +93,7 @@ class Application
     /**
      * ZendFramework 3 Application init
      */
-    protected static function initApplication( $plugin_dir, $plugin_prefix = "")
+    public static function initApplication( $plugin_dir, $plugin_prefix = "")
     {
         /**
          * Inject wordpress config
@@ -116,7 +116,7 @@ class Application
     /**
      * Nothing to init
      */
-    protected function init()
+    public function init()
     {
 
     }
@@ -125,7 +125,7 @@ class Application
      * Attached to activate_{ plugin_basename( __FILES__ ) } by register_activation_hook()
      * @static
      */
-    protected function plugin_activation()
+    public function plugin_activation()
     {
 
     }
@@ -134,7 +134,7 @@ class Application
      * Removes all connection options
      * @static
      */
-    protected function plugin_deactivation()
+    public function plugin_deactivation()
     {
         //tidy up
     }
@@ -143,7 +143,7 @@ class Application
      * Logging
      * @param type $debug
      */
-    protected static function log($debug)
+    public function log($debug)
     {
         //tidy up
     }
@@ -156,7 +156,7 @@ class Application
      * @param array $query
      * @return \StdClass
      */
-    protected function posts($query)
+    public function posts($query)
     {
         global $customTemplate, $wp_query;
 
@@ -255,7 +255,7 @@ class Application
      *
      * @global string $customTemplate
      */
-    protected function templateRedirect()
+    public function templateRedirect()
     {
         global $customTemplate;
         $filePath = get_template_directory() . '/' . $customTemplate;
@@ -268,7 +268,7 @@ class Application
     /**
      * Receive and setup WP widgets from ZF application
      */
-    protected function registerWidgets()
+    public function registerWidgets()
     {
         if (self::$application) {
             $config = self::$application->getServiceManager()->get('config');
@@ -286,7 +286,7 @@ class Application
     /**
      * Display ZF action content in admin section on WP
      */
-    protected function getAdminContent()
+    public function getAdminContent()
     {
         self::$application->getRequest()->setMetadata('isWpAdmin', true);
         $response = self::runApplication();
@@ -304,7 +304,7 @@ class Application
     /**
      * Register admin WP navigation
      */
-    protected function registerAdminNavigation()
+    public function registerAdminNavigation()
     {
         if (self::$application) {
             $navigation = self::$application->getServiceManager()->get('Zend\Navigation\Navigation');
