@@ -1,7 +1,7 @@
 {
     "name": "wiryonolau/zend-wordpress",
     "description" : "Wordpress Base Plugin using Zend Framework 3",
-    "license" : "GPL v2",
+    "license" : "GPL-2.0-or-later",
     "type" : "library",
     "keywords" : [
         "zf3",
