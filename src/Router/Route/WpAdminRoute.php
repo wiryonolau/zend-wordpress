@@ -13,9 +13,10 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
-Copyright 2015-2017 Zendmaniacs.
 */
+
+
+namespace ZendWordpress\Router\Route;
 
 use Zend\Router\Http\RouteInterface;
 use Zend\Router\Http\RouteMatch;
@@ -72,15 +73,30 @@ class WpAdminRoute implements RouteInterface
         $params = array();
         $path = $request->getUri()->getPath();
         $query = $request->getUri()->getQuery();
+
         parse_str($query, $params);
-        if ($path == $this->path && !empty($params['page']) && $params['page'] == $this->route) {
+
+        if ($path !== $this->path) {
+            return null;
+        }
+
+        if (!empty($params['page'])) {
+            return null;
+        }
+
+        if (preg_replace(sprintf('/^%s/', $this->defaults["plugin_prefix"]), '', $params['page']) !== $this->route) {
+            return null;
+        }
+
+        try {
             unset($params['page']);
             $params = array_merge($this->defaults, $params);
             $this->params = $params;
             $routeMatch = new RouteMatch($params, 10);
             return $routeMatch;
+        } catch (\Exception $e) {
+            return null;
         }
-        return null;
     }
 
     /**

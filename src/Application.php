@@ -1,4 +1,5 @@
 <?php
+
 /*
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -13,17 +14,17 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
-Copyright 2015-2017 Zendmaniacs.
 */
+
+namespace ZendWordpress;
 
 use Zend\Mvc\MvcEvent;
 use Zend\View\Model\ViewModel;
-
+use Zend\Mvc\Application as MvcApplication;
 /**
  * Class of plugin with all integration methods of ZF3 applciation into WP
  */
-class ZfPlugin
+class Application
 {
 
     /**
@@ -31,40 +32,109 @@ class ZfPlugin
      */
     protected static $application;
 
+    protected $plugin_dir = "";
+    protected $plugin_file = "";
+    protected $prefix = "";
+
+    public function __construct( array $options = [] ) {
+        $defaults = [
+            "plugin_directory" => "",
+            "plugin_file" => "",
+            "plugin_prefix" => ""
+        ];
+
+        $defaults = array_merge($defaults, array_intersect_key($options, $defaults));
+
+        $this->setPluginDirectory($defaults["plugin_directory"]);
+        $this->setPluginFile($defaults["plugin_file"]);
+        $this->setPluginPrefix($defaults["plugin_prefix"]);
+    }
+
+    public function setPluginDirectory($plugin_dir) {
+        if (is_dir($plugin_dir)) {
+            $this->plugin_dir = $plugin_dir;
+        }
+        return $this;
+    }
+
+    public function setPluginFile($plugin_file) {
+        if (file_exists($plugin_file)) {
+            $this->plugin_file = $plugin_file;
+        }
+        return $this;
+    }
+
+    public function setPluginPrefix($plugin_prefix) {
+        if (preg_match('/[a-zA-Z0-9_-]+/', $plugin_prefix)) {
+            $this->plugin_prefix = $plugin_prefix;
+        }
+        return $this;
+    }
+
+
+    public function run() {
+        if (empty($this->plugin_dir) or empty($this->plugin_file)) {
+            throw new \Exception("Must specify plugin directory path and plugin file path");
+        }
+
+        register_activation_hook( $this->plugin_file, array( $this, 'plugin_activation' ) );
+        register_deactivation_hook( $this->plugin_file, array( $this, 'plugin_deactivation' ) );
+
+        add_action( 'init', array( $this, 'init' ) );
+        add_filter( 'posts_results', array( $this, 'posts' ) );
+        add_action( 'template_redirect', array( $this,'templateRedirect'));
+        add_action( 'widgets_init', array( $this,'registerWidgets'));
+        add_action( 'admin_menu', array( $this,'registerAdminNavigation') );
+
+        self::initApplication( $this->plugin_dir, $this->plugin_prefix );
+    }
+
+
     /**
      * ZendFramework 3 Application init
      */
-    public static function initApplication()
+    protected static function initApplication( $plugin_dir, $plugin_prefix = "")
     {
-        $dir = dirname(dirname(dirname(dirname(__DIR__))));
-        chdir($dir);
-        require 'vendor/autoload.php';
-        require_once( ZF__PLUGIN_DIR . 'WpAdminRoute.php' );
-        self::$application = \Zend\Mvc\Application::init(require 'config/application.config.php');
+        /**
+         * Inject wordpress config
+         * Can be access from $container->get("ApplicationConfig") or $application->getServiceManager->get("ApplicationConfig")
+         */
+        $config = [
+            "wordpress" => [
+                "plugin_dir" => $plugin_dir,
+                "plugin_prefix" => $plugin_prefix
+            ]
+        ];
+
+        if (file_exists($plugin_dir. '/config/application.config.php')) {
+            $config = \Zend\Stdlib\ArrayUtils::merge($config, require $plugin_dir. '/config/application.config.php');
+        }
+
+        self::$application = MvcApplication::init($config);
     }
 
     /**
      * Nothing to init
      */
-    public function init()
+    protected function init()
     {
-        
+
     }
 
     /**
      * Attached to activate_{ plugin_basename( __FILES__ ) } by register_activation_hook()
      * @static
      */
-    public static function plugin_activation()
+    protected function plugin_activation()
     {
-        
+
     }
 
     /**
      * Removes all connection options
      * @static
      */
-    public static function plugin_deactivation()
+    protected function plugin_deactivation()
     {
         //tidy up
     }
@@ -73,24 +143,24 @@ class ZfPlugin
      * Logging
      * @param type $debug
      */
-    public static function log($debug)
+    protected static function log($debug)
     {
         //tidy up
     }
 
     /**
      * Call ZF application if Wordpress not in action
-     * 
+     *
      * @global string $customTemplate
      * @global WP_Query $wp_query
      * @param array $query
      * @return \StdClass
      */
-    public function posts($query)
+    protected function posts($query)
     {
         global $customTemplate, $wp_query;
 
-        if (empty($query) || !self::isVisiblePost($query) || $wp_query->is_404) {
+        if (empty($query) || !$this->isVisiblePost($query) || $wp_query->is_404) {
 
             /* @var $response \Zend\Http\PhpEnvironment\Response */
             $response = self::runApplication();
@@ -135,7 +205,7 @@ class ZfPlugin
      * @param array $query
      * @return boolean
      */
-    protected static function isVisiblePost($query) 
+    protected function isVisiblePost($query)
     {
         foreach($query as $post) {
             switch($post->post_type) {
@@ -143,7 +213,7 @@ class ZfPlugin
                 case 'page':
                     return true;
             }
-        } 
+        }
         return false;
     }
 
@@ -182,10 +252,10 @@ class ZfPlugin
 
     /**
      * Setup custom template if was defined globally
-     * 
+     *
      * @global string $customTemplate
      */
-    public function templateRedirect()
+    protected function templateRedirect()
     {
         global $customTemplate;
         $filePath = get_template_directory() . '/' . $customTemplate;
@@ -198,10 +268,15 @@ class ZfPlugin
     /**
      * Receive and setup WP widgets from ZF application
      */
-    public function registerWidgets()
+    protected function registerWidgets()
     {
         if (self::$application) {
             $config = self::$application->getServiceManager()->get('config');
+
+            if (empty($config["wp_widgets"])) {
+                return false;
+            }
+
             foreach ($config['wp_widgets'] as $widgetClass) {
                 register_widget($widgetClass);
             }
@@ -211,7 +286,7 @@ class ZfPlugin
     /**
      * Display ZF action content in admin section on WP
      */
-    public static function getAdminContent()
+    protected function getAdminContent()
     {
         self::$application->getRequest()->setMetadata('isWpAdmin', true);
         $response = self::runApplication();
@@ -229,23 +304,31 @@ class ZfPlugin
     /**
      * Register admin WP navigation
      */
-    public function registerAdminNavigation()
+    protected function registerAdminNavigation()
     {
         if (self::$application) {
-            $navigation = self::$application->getServiceManager()->get('Zend\Navigation\ZfToWpAdmin');
+            $navigation = self::$application->getServiceManager()->get('Zend\Navigation\Navigation');
             /* @var $page \Zend\Navigation\Page\Mvc */
             foreach ($navigation as $page) {
                 $params = $page->getParams();
                 $params['use_just_route'] = true;
                 $page->setParams($params);
-                add_menu_page($page->getLabel(), $page->getLabel(), 'manage_options', $page->getHref(), array('ZfPlugin', 'getAdminContent'), $page->get('icon'));
-                add_submenu_page($page->getHref(), $page->getLabel(), $page->getLabel(), 'manage_options', $page->getHref(), array('ZfPlugin', 'getAdminContent'));
+                $pageTarget = sprintf("%s%s", $this->plugin_prefix, $page->getHref());
+
+                add_menu_page($page->getLabel(), $page->getLabel(), 'manage_options', $pageTarget, array($this, 'getAdminContent'), $page->get('icon'));
+
+                if(!empty($params["parent_as_child"]) and $params["parent_as_child"] == true) {
+                    add_submenu_page($pageTarget, $page->getLabel(), $page->getLabel(), 'manage_options', $pageTarget, array($this, 'getAdminContent'));
+                }
+
+                add_submenu_page($page->getHref(), $page->getLabel(), $page->getLabel(), 'manage_options', $page->getHref(), array($this, 'getAdminContent'));
                 if ($page->hasPages()) {
                     foreach ($page->getPages() as $subPage) {
                         $params = $subPage->getParams();
                         $params['use_just_route'] = true;
                         $subPage->setParams($params);
-                        add_submenu_page($page->getHref(), $subPage->getLabel(), $subPage->getLabel(), 'manage_options', $subPage->getHref(), array('ZfPlugin', 'getAdminContent'));
+                        $subPageTarget = sprintf("%s%s", $this->plugin_prefix, $subPage->getHref());
+                        add_submenu_page($pageTarget, $subPage->getLabel(), $subPage->getLabel(), 'manage_options', $subPageTarget, array($this, 'getAdminContent'));
                     }
                 }
             }
