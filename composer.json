@@ -1,4 +1,14 @@
 {
+    "name": "wiryonolau/zend-wordpress",
+    "description" : "Wordpress Base Plugin using Zend Framework 3",
+    "license" : "GPL v2",
+    "type" : "library",
+    "keywords" : [
+        "zf3",
+        "zend framework 3",
+        "wordpress"
+    ], 
+    "homepage": "https://github.com/wiryonolau/zend-wordpress",
     "authors": [{
         "name": "Wiryono Lau",
         "email": "wiryonolau@gmail.com"
