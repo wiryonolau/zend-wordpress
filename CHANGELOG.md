@@ -1,3 +1,6 @@
+## 0.1.1 (September 26, 2019)
+  - Add script function
+
 ## 0.1.0 (September 12, 2019)
   - Fix match route page
   - Fix function scope
