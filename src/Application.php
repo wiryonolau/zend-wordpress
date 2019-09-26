@@ -35,14 +35,14 @@ class Application
     protected $plugin_dir = "";
     protected $plugin_file = "";
     protected $prefix = "";
-    protected $scripts = [];
+    protected $scripts = array();
 
-    public function __construct( array $options = [] ) {
-        $defaults = [
+    public function __construct( array $options = array() ) {
+        $defaults = array(
             "plugin_directory" => "",
             "plugin_file" => "",
             "plugin_prefix" => ""
-        ];
+        );
 
         $defaults = array_merge($defaults, array_intersect_key($options, $defaults));
 
@@ -72,8 +72,8 @@ class Application
         return $this;
     }
 
-    public function addStyle($scope, $handler, $source="", $dependency=[], $version=false, $media = "all") {
-        array_push($this->scripts, [
+    public function addStyle($scope, $handler, $source="", $dependency=array(), $version=false, $media = "all") {
+        array_push($this->scripts, array(
             "type" => "style",
             "scope" => $scope,
             "handler" => $handler,
@@ -81,13 +81,13 @@ class Application
             "dependency" => $dependency,
             "version" => $version,
             "media" => $media
-        ]);
+        ));
 
         return $this;
     }
 
-    public function addScript($scope, $handler, $source="", $dependency=[], $version=false, $in_footer = false) {
-        array_push($this->scripts, [
+    public function addScript($scope, $handler, $source="", $dependency=array(), $version=false, $in_footer = false) {
+        array_push($this->scripts, array(
             "type" => "script",
             "scope" => $scope,
             "handler" => $handler,
@@ -95,7 +95,7 @@ class Application
             "dependency" => $dependency,
             "version" => $version,
             "in_footer" => $in_footer
-        ]);
+        ));
 
         return $this;
     }
@@ -132,8 +132,8 @@ class Application
         add_action( 'template_redirect', array( $this,'templateRedirect'));
         add_action( 'widgets_init', array( $this,'registerWidgets'));
         add_action( 'admin_menu', array( $this,'registerAdminNavigation') );
-        add_action( 'wp_enqueue_scripts', array($this, 'registerScript'), 'frontend' );
-        add_action( 'admin_enqueue_scripts', array($this, 'registerScript'), 'admin' );
+        add_action( 'wp_enqueue_scripts', function() { call_user_func( array($this, 'registerScript'), "frontend"); });
+        add_action( 'admin_enqueue_scripts', function() { call_user_func( array($this, 'registerScript'), "admin"); });
 
         self::initApplication( $this->plugin_dir, $this->plugin_prefix );
     }
@@ -148,12 +148,12 @@ class Application
          * Inject wordpress config
          * Can be access from $container->get("ApplicationConfig") or $application->getServiceManager->get("ApplicationConfig")
          */
-        $config = [
-            "wordpress" => [
+        $config = array(
+            "wordpress" => array(
                 "plugin_dir" => $plugin_dir,
                 "plugin_prefix" => $plugin_prefix
-            ]
-        ];
+            )
+        );
 
         if (file_exists($plugin_dir. '/config/application.config.php')) {
             $config = \Zend\Stdlib\ArrayUtils::merge($config, require $plugin_dir. '/config/application.config.php');
