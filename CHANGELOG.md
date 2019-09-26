@@ -1,3 +1,6 @@
+## 0.1.2 (September 26, 2019)
+  - Fix loading script by scope
+
 ## 0.1.1 (September 26, 2019)
   - Add script function
 
