@@ -35,6 +35,7 @@ class Application
     protected $plugin_dir = "";
     protected $plugin_file = "";
     protected $prefix = "";
+    protected $scripts = [];
 
     public function __construct( array $options = [] ) {
         $defaults = [
@@ -71,6 +72,52 @@ class Application
         return $this;
     }
 
+    public function addStyle($scope, $handler, $source="", $dependency=[], $version=false, $media = "all") {
+        array_push($this->scripts, [
+            "type" => "style",
+            "scope" => $scope,
+            "handler" => $handler,
+            "source" => $source,
+            "dependency" => $dependency,
+            "version" => $version,
+            "media" => $media
+        ]);
+
+        return $this;
+    }
+
+    public function addScript($scope, $handler, $source="", $dependency=[], $version=false, $in_footer = false) {
+        array_push($this->scripts, [
+            "type" => "script",
+            "scope" => $scope,
+            "handler" => $handler,
+            "source" => $source,
+            "dependency" => $dependency,
+            "version" => $version,
+            "in_footer" => $in_footer
+        ]);
+
+        return $this;
+    }
+
+    public function registerScript($scope) {
+        foreach($this->scripts as $script) {
+            if ( !in_array($script["scope"], ["*", "all"]) and $script["scope"] !== $scope ) {
+                continue;
+            }
+
+            extract($script);
+            switch($type) {
+                case "style":
+                    wp_enqueue_style($handler, $source, $dependency, $version, $media);
+                    break;
+                case "script":
+                    wp_enqueue_script($handler, $source, $dependency, $version, $in_footer);
+                    break;
+                default:
+            }
+        };
+    }
 
     public function run() {
         if (empty($this->plugin_dir) or empty($this->plugin_file)) {
@@ -85,6 +132,8 @@ class Application
         add_action( 'template_redirect', array( $this,'templateRedirect'));
         add_action( 'widgets_init', array( $this,'registerWidgets'));
         add_action( 'admin_menu', array( $this,'registerAdminNavigation') );
+        add_action( 'wp_enqueue_scripts', array($this, 'registerScript'), 'frontend' );
+        add_action( 'admin_enqueue_scripts', array($this, 'registerScript'), 'admin' );
 
         self::initApplication( $this->plugin_dir, $this->plugin_prefix );
     }
