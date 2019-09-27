@@ -13,6 +13,7 @@ composer require wiryonolau/zend-wordpress
 ## Usage
 
 your-plugin-file.php
+
 ```php
 <?php
 require_once plugin_dir_path(__FILE__). '/vendor/autoload.php';
@@ -60,5 +61,38 @@ return [
     ]
 ]
 
+?>
+```
+
+## Using UrlHelper on view ##
+
+Since all url in admin are translated to a query "admin.php?page=" when assembling route,
+passing "query" options to url helper will break the url due to TreeRouteStack injecting query options after assembling route.
+You must pass everything as parameters, which then will be converted to query by WpAdminRoute.
+
+You could define your own TreeRouteStack if neccessary and pass it to array("router" => array("router_class" => ""))
+
+```php
+<?php
+# Do this
+$this->url(
+    "your page without namespace",
+    array(
+        "param1" => "your parameter"
+        "param1" => "your parameter and so on"
+    )
+);
+
+# Instead of this
+$this->url(
+    "your page without namespace",
+    array(),
+    array(
+        "query" => array(
+            "param1" => "your parameter"
+            "param1" => "your parameter and so on"
+        )
+    )
+);
 ?>
 ```

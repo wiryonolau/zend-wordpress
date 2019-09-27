@@ -16,7 +16,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
 
 
-namespace ZendWordpress\Router\Route;
+namespace ZendWordpress\Router\Http;
 
 use Zend\Router\Http\RouteInterface;
 use Zend\Router\Http\RouteMatch;
@@ -105,7 +105,10 @@ class WpAdminRoute implements RouteInterface
     public function assemble(array $params = array(), array $options = array())
     {
         if (empty($params['use_just_route'])) {
-            $params['page'] = $this->route;
+            $params = array_merge(
+                array("page" => sprintf("%s%s", $this->defaults["plugin_prefix"], $this->route)),
+                $params
+            );
             $query = http_build_query($params);
             return $this->path.'?'.$query;
         } else {

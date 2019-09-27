@@ -31,7 +31,7 @@ class Module
                             "plugin_prefix" => $locator->get("ApplicationConfig")["wordpress"]["plugin_prefix"]
                         ]
                     ]);
-                    $route = Router\Route\WpAdminRoute::factory($options);
+                    $route = Router\Http\WpAdminRoute::factory($options);
                     return $route;
                 },
             ),
