@@ -1,3 +1,6 @@
+## 0.1.3 (September 27, 2019)
+  - Fix route assemble function, move class to Route\Http
+
 ## 0.1.2 (September 26, 2019)
   - Fix loading script by scope
 
