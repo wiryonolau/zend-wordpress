@@ -18,8 +18,48 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 namespace ZendWordpress;
 
+use Zend\Mvc\MvcEvent;
+use Zend\Session\SessionManager;
+
 class Module
 {
+    public function onBootstrap(MvcEvent $event)
+    {
+        $application = $event->getApplication();
+        $eventManager = $application->getEventManager();
+        $sharedEvents = $application->getEventManager()->getSharedManager();
+        $serviceManager = $application->getServiceManager();
+
+        # Default session
+        $sessionManager = $serviceManager->get(SessionManager::class);
+
+        $sharedEvents->attach(
+            'Zend\Mvc\Controller\AbstractController', 'dispatch', function ($e) {
+                $result = $e->getResult();
+                if ($result instanceof ViewModel) {
+                    $result->setTerminal(true);
+                }
+            }
+        );
+
+        $eventManager->attach(
+            MvcEvent::EVENT_DISPATCH_ERROR, function (MvcEvent $e) {
+                $result = $e->getResult();
+                if ($result instanceof ViewModel) {
+                    $result->setTerminal(true);
+                }
+            }
+        );
+
+        $eventManager->attach(
+            MvcEvent::EVENT_FINISH, function (MvcEvent $event) {
+                if($event->getResponse() instanceof \Zend\Http\PhpEnvironment\Response) {
+                    $event->stopPropagation();
+                }
+            }
+        );
+    }
+
     public function getRouteConfig()
     {
         return array(

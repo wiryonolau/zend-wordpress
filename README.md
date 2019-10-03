@@ -96,3 +96,8 @@ $this->url(
 );
 ?>
 ```
+
+## Limitation ##
+
+- wpAdminRoute does not support child_routes at the moment. If you add child_routes it will thrown an exception.
+- Wordpress navigation menu only support single nested level navigation.

@@ -28,17 +28,16 @@ class WpAdminRoute implements RouteInterface
 {
 
     protected $defaults = array();
-    protected $params = array();
     protected $path = '/wp-admin/admin.php';
     protected $route;
 
     /**
      * Create a new page route.
      */
-    public function __construct(array $defaults = array(), $route = '')
+    public function __construct($route, array $defaults = [])
     {
+        $this->route    = $route;
         $this->defaults = $defaults;
-        $this->route = $route;
     }
 
     /**
@@ -60,7 +59,7 @@ class WpAdminRoute implements RouteInterface
             $options['route'] = '';
         }
 
-        return new static($options['defaults'], $options['route']);
+        return new static($options['route'], $options['defaults']);
     }
 
     /**
@@ -84,15 +83,15 @@ class WpAdminRoute implements RouteInterface
             return null;
         }
 
-        if (preg_replace(sprintf('/^%s/', $this->defaults["plugin_prefix"]), '', $params['page']) !== $this->route) {
+        if (preg_replace(sprintf('/^%s/', $this->defaults["plugin_prefix"]), '/', $params['page']) !== $this->route) {
             return null;
         }
 
         try {
             unset($params['page']);
             $params = array_merge($this->defaults, $params);
-            $this->params = $params;
-            $routeMatch = new RouteMatch($params, 10);
+            $routeMatch = new RouteMatch($params, strlen($this->route));
+            $routeMatch->setMatchedRouteName($this->route);
             return $routeMatch;
         } catch (\Exception $e) {
             return null;
@@ -104,17 +103,24 @@ class WpAdminRoute implements RouteInterface
      */
     public function assemble(array $params = array(), array $options = array())
     {
+        if (isset($options["has_child"])) {
+            return $this->route;
+        }
+
         if (empty($params['use_just_route'])) {
+            $route = array_values(array_filter(explode("/", $this->route)));
+            $route[0] = sprintf("%s%s", $this->defaults["plugin_prefix"], $route[0]);
             $params = array_merge(
-                array("page" => sprintf("%s%s", $this->defaults["plugin_prefix"], $this->route)),
+                array("page" => implode("/", $route)),
                 $params
             );
             $query = http_build_query($params);
             return $this->path.'?'.$query;
-        } else {
-            return $this->route;
         }
+
+        return $this->route;
     }
+
 
     /**
      * Get a list of parameters used while assembling.

@@ -37,7 +37,8 @@ class Application
     protected $prefix = "";
     protected $scripts = array();
 
-    public function __construct( array $options = array() ) {
+    public function __construct( array $options = array() )
+    {
         $defaults = array(
             "plugin_directory" => "",
             "plugin_file" => "",
@@ -51,91 +52,110 @@ class Application
         $this->setPluginPrefix($defaults["plugin_prefix"]);
     }
 
-    public function setPluginDirectory($plugin_dir) {
+    public function setPluginDirectory($plugin_dir)
+    {
         if (is_dir($plugin_dir)) {
             $this->plugin_dir = $plugin_dir;
         }
         return $this;
     }
 
-    public function setPluginFile($plugin_file) {
+    public function setPluginFile($plugin_file)
+    {
         if (file_exists($plugin_file)) {
             $this->plugin_file = $plugin_file;
         }
         return $this;
     }
 
-    public function setPluginPrefix($plugin_prefix) {
+    public function setPluginPrefix($plugin_prefix)
+    {
         if (preg_match('/[a-zA-Z0-9_-]+/', $plugin_prefix)) {
             $this->plugin_prefix = $plugin_prefix;
         }
         return $this;
     }
 
-    public function addStyle($scope, $handler, $source="", $dependency=array(), $version=false, $media = "all") {
-        array_push($this->scripts, array(
-            "type" => "style",
-            "scope" => $scope,
-            "handler" => $handler,
-            "source" => $source,
-            "dependency" => $dependency,
-            "version" => $version,
-            "media" => $media
-        ));
+    public function addStyle($scope, $handler, $source="", $dependency=array(), $version=false, $media = "all")
+    {
+        array_push(
+            $this->scripts, array(
+                "type" => "style",
+                "scope" => $scope,
+                "handler" => $handler,
+                "source" => $source,
+                "dependency" => $dependency,
+                "version" => $version,
+                "media" => $media
+            )
+        );
 
         return $this;
     }
 
-    public function addScript($scope, $handler, $source="", $dependency=array(), $version=false, $in_footer = false) {
-        array_push($this->scripts, array(
-            "type" => "script",
-            "scope" => $scope,
-            "handler" => $handler,
-            "source" => $source,
-            "dependency" => $dependency,
-            "version" => $version,
-            "in_footer" => $in_footer
-        ));
+    public function addScript($scope, $handler, $source="", $dependency=array(), $version=false, $in_footer = false)
+    {
+        array_push(
+            $this->scripts, array(
+                "type" => "script",
+                "scope" => $scope,
+                "handler" => $handler,
+                "source" => $source,
+                "dependency" => $dependency,
+                "version" => $version,
+                "in_footer" => $in_footer
+            )
+        );
 
         return $this;
     }
 
-    public function registerScript($scope) {
+    public function registerScript($scope)
+    {
         foreach($this->scripts as $script) {
-            if ( !in_array($script["scope"], ["*", "all"]) and $script["scope"] !== $scope ) {
+            if (!in_array($script["scope"], ["*", "all"]) and $script["scope"] !== $scope ) {
                 continue;
             }
 
             extract($script);
             switch($type) {
-                case "style":
-                    wp_enqueue_style($handler, $source, $dependency, $version, $media);
-                    break;
-                case "script":
-                    wp_enqueue_script($handler, $source, $dependency, $version, $in_footer);
-                    break;
-                default:
+            case "style":
+                wp_enqueue_style($handler, $source, $dependency, $version, $media);
+                break;
+            case "script":
+                wp_enqueue_script($handler, $source, $dependency, $version, $in_footer);
+                break;
+            default:
             }
         };
     }
 
-    public function run() {
+    public function run()
+    {
         if (empty($this->plugin_dir) or empty($this->plugin_file)) {
             throw new \Exception("Must specify plugin directory path and plugin file path");
         }
 
-        register_activation_hook( $this->plugin_file, array( $this, 'plugin_activation' ) );
-        register_deactivation_hook( $this->plugin_file, array( $this, 'plugin_deactivation' ) );
+        register_activation_hook($this->plugin_file, array( $this, 'plugin_activation' ));
+        register_deactivation_hook($this->plugin_file, array( $this, 'plugin_deactivation' ));
 
-        add_action( 'init', array( $this, 'init' ) );
-        add_filter( 'posts_results', array( $this, 'posts' ) );
-        add_action( 'template_redirect', array( $this,'templateRedirect'));
-        add_action( 'widgets_init', array( $this,'registerWidgets'));
-        add_action( 'admin_menu', array( $this,'registerAdminNavigation') );
-        add_action( 'wp_enqueue_scripts', function() { call_user_func( array($this, 'registerScript'), "frontend"); });
-        add_action( 'admin_enqueue_scripts', function() { call_user_func( array($this, 'registerScript'), "admin"); });
+        add_action('init', array( $this, 'init' ));
+        add_filter('posts_results', array( $this, 'posts' ));
+        add_action('template_redirect', array( $this,'templateRedirect'));
+        add_action('widgets_init', array( $this,'registerWidgets'));
+        add_action('admin_menu', array( $this,'registerAdminNavigation'));
+        add_action(
+            'wp_enqueue_scripts', function () {
+                call_user_func(array($this, 'registerScript'), "frontend");
+            }
+        );
+        add_action(
+            'admin_enqueue_scripts', function () {
+                call_user_func(array($this, 'registerScript'), "admin");
+            }
+        );
 
-        self::initApplication( $this->plugin_dir, $this->plugin_prefix );
+        self::initApplication($this->plugin_dir, $this->plugin_prefix);
     }
 
 
@@ -156,7 +176,7 @@ class Application
         );
 
         if (file_exists($plugin_dir. '/config/application.config.php')) {
-            $config = \Zend\Stdlib\ArrayUtils::merge($config, require $plugin_dir. '/config/application.config.php');
+            $config = \Zend\Stdlib\ArrayUtils::merge($config, include $plugin_dir. '/config/application.config.php');
         }
 
         self::$application = MvcApplication::init($config);
@@ -172,6 +192,7 @@ class Application
 
     /**
      * Attached to activate_{ plugin_basename( __FILES__ ) } by register_activation_hook()
+     *
      * @static
      */
     public function plugin_activation()
@@ -181,6 +202,7 @@ class Application
 
     /**
      * Removes all connection options
+     *
      * @static
      */
     public function plugin_deactivation()
@@ -190,6 +212,7 @@ class Application
 
     /**
      * Logging
+     *
      * @param type $debug
      */
     public function log($debug)
@@ -202,7 +225,7 @@ class Application
      *
      * @global string $customTemplate
      * @global WP_Query $wp_query
-     * @param array $query
+     * @param  array $query
      * @return \StdClass
      */
     public function posts($query)
@@ -219,10 +242,10 @@ class Application
             if ($contentType) {
                 $contentTypeValue = $contentType->getFieldValue();
                 switch ($contentTypeValue) {
-                    default:
-                        $response->sendHeaders();
-                        $response->sendContent();
-                        exit;
+                default:
+                    $response->sendHeaders();
+                    $response->sendContent();
+                    exit;
                         break;
                 }
             }
@@ -251,16 +274,17 @@ class Application
 
     /**
      * Check if post is HTML type
-     * @param array $query
+     *
+     * @param  array $query
      * @return boolean
      */
     protected function isVisiblePost($query)
     {
         foreach($query as $post) {
             switch($post->post_type) {
-                case 'post':
-                case 'page':
-                    return true;
+            case 'post':
+            case 'page':
+                return true;
             }
         }
         return false;
@@ -268,35 +292,14 @@ class Application
 
     /**
      * Execute ZF application
-     * @return  Zend\Http\PhpEnvironment\Response
+     *
+     * @return Zend\Http\PhpEnvironment\Response
      */
     protected static function runApplication()
     {
-        $eventManager = self::$application->getEventManager();
-        $sharedEvents = self::$application->getEventManager()->getSharedManager();
-        $sharedEvents->attach('Zend\Mvc\Controller\AbstractController', 'dispatch', function($e) {
-            $result = $e->getResult();
-            if ($result instanceof ViewModel) {
-                $result->setTerminal(true);
-            }
-        });
-
-        $eventManager->attach(MvcEvent::EVENT_DISPATCH_ERROR, function(MvcEvent $e) {
-            $result = $e->getResult();
-            if ($result instanceof ViewModel) {
-                $result->setTerminal(true);
-            }
-        });
-
-        $eventManager->attach(MvcEvent::EVENT_FINISH, function(MvcEvent $event) {
-            if($event->getResponse() instanceof \Zend\Http\PhpEnvironment\Response) {
-                $event->stopPropagation();
-            }
-        });
         self::$application->getRequest()->setBaseUrl('');
         self::$application->run();
-        $response = self::$application->getResponse();
-        return $response;
+        return self::$application->getResponse();
     }
 
     /**
@@ -309,7 +312,7 @@ class Application
         global $customTemplate;
         $filePath = get_template_directory() . '/' . $customTemplate;
         if (!empty($customTemplate) && file_exists($filePath)) {
-            include($filePath);
+            include $filePath;
             exit;
         }
     }
@@ -345,7 +348,7 @@ class Application
             wp_redirect($redirectUrl);
             exit();
         } else {
-            require_once(ABSPATH . 'wp-admin/admin-header.php');
+            include_once ABSPATH . 'wp-admin/admin-header.php';
         }
         echo '<div class="wrap">' . $response->getContent() . '</div>';
     }
@@ -357,31 +360,39 @@ class Application
     {
         if (self::$application) {
             $navigation = self::$application->getServiceManager()->get('Zend\Navigation\Navigation');
-            /* @var $page \Zend\Navigation\Page\Mvc */
-            foreach ($navigation as $page) {
-                $params = $page->getParams();
-                $params['use_just_route'] = true;
-                $page->setParams($params);
-                $pageTarget = sprintf("%s%s", $this->plugin_prefix, $page->getHref());
+            $this->addPage($navigation);
+        }
+    }
 
-                add_menu_page($page->getLabel(), $page->getLabel(), 'manage_options', $pageTarget, array($this, 'getAdminContent'), $page->get('icon'));
-
+    private function addPage($pages, $parent_target = null)
+    {
+        foreach ($pages as $page) {
+            if ($parent_target === null) {
+                $target = $this->getHref($page);
+                add_menu_page($page->getLabel(), $page->getLabel(), 'manage_options', $target, array($this, 'getAdminContent'), $page->get('icon'));
                 if(!empty($params["parent_as_child"]) and $params["parent_as_child"] == true) {
-                    add_submenu_page($pageTarget, $page->getLabel(), $page->getLabel(), 'manage_options', $pageTarget, array($this, 'getAdminContent'));
+                    add_submenu_page($target, $page->getLabel(), $page->getLabel(), 'manage_options', $target, array($this, 'getAdminContent'));
                 }
+            } else {
+                $target = $this->getHref($page);
+                add_submenu_page($parent_target, $page->getLabel(), $page->getLabel(), 'manage_options', $target, array($this, 'getAdminContent'));
+            }
 
-                add_submenu_page($page->getHref(), $page->getLabel(), $page->getLabel(), 'manage_options', $page->getHref(), array($this, 'getAdminContent'));
-                if ($page->hasPages()) {
-                    foreach ($page->getPages() as $subPage) {
-                        $params = $subPage->getParams();
-                        $params['use_just_route'] = true;
-                        $subPage->setParams($params);
-                        $subPageTarget = sprintf("%s%s", $this->plugin_prefix, $subPage->getHref());
-                        add_submenu_page($pageTarget, $subPage->getLabel(), $subPage->getLabel(), 'manage_options', $subPageTarget, array($this, 'getAdminContent'));
-                    }
-                }
+            if ($page->hasPages()) {
+                $this->addPage($page->getPages(), $target);
             }
         }
+    }
+
+    private function getHref($page)
+    {
+        $params = $page->getParams();
+        $params['use_just_route'] = true;
+        $page->setParams($params);
+
+        $href = array_values(array_filter(explode("/", $page->getHref())));
+        $href[0] = sprintf("%s%s", $this->plugin_prefix, $href[0]);
+        return implode("/", $href);
     }
 
 }
