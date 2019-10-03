@@ -7,7 +7,7 @@
         "zf3",
         "zend framework 3",
         "wordpress"
-    ], 
+    ],
     "homepage": "https://github.com/wiryonolau/zend-wordpress",
     "authors": [{
         "name": "Wiryono Lau",
@@ -20,7 +20,9 @@
     },
     "require": {
         "php": "^7.2",
-        "zendframework/zend-mvc": "^3.1"
+        "zendframework/zend-mvc": "^3.1",
+        "zendframework/zend-session": "^2.9",
+        "zendframework/zend-navigation": "^2.9"
     },
     "autoload": {
         "psr-4": {

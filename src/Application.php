@@ -169,6 +169,11 @@ class Application
          * Can be access from $container->get("ApplicationConfig") or $application->getServiceManager->get("ApplicationConfig")
          */
         $config = array(
+            "modules" => array(
+                "Zend\Router",
+                "Zend\Session",
+                "Zend\Navigation"
+            ),
             "wordpress" => array(
                 "plugin_dir" => $plugin_dir,
                 "plugin_prefix" => $plugin_prefix

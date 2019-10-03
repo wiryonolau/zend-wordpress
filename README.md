@@ -12,7 +12,7 @@ composer require wiryonolau/zend-wordpress
 
 ## Usage
 
-your-plugin-file.php
+#### your-plugin-file.php
 
 ```php
 <?php
@@ -26,7 +26,8 @@ $zendWordpress->setPluginDirectory(plugin_dir_path(__FILE__))
 ?>
 ```
 
-config/application.config.php
+#### config/application.config.php
+module Zend\Navigation, Zend\Router, Zend\Session already included
 
 ```php
 <?php
@@ -40,7 +41,7 @@ return [
 ?>
 ```
 
-config/router.config.php
+#### config/router.config.php
 ```php
 <?php
 
