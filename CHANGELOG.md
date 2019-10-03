@@ -1,3 +1,6 @@
+## 0.1.4 (October 03, 2019)
+  - Add session
+
 ## 0.1.3 (September 27, 2019)
   - Fix route assemble function, move class to Route\Http
 
