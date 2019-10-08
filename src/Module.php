@@ -30,8 +30,10 @@ class Module
         $sharedEvents = $application->getEventManager()->getSharedManager();
         $serviceManager = $application->getServiceManager();
 
-        # Default session
-        $sessionManager = $serviceManager->get(SessionManager::class);
+        if ($serviceManager->get("ApplicationConfig")["wordpress"]["use_session"]) {
+            $sessionManager = $serviceManager->get(SessionManager::class);
+            $sessionManager->start();
+        }
 
         $sharedEvents->attach(
             'Zend\Mvc\Controller\AbstractController', 'dispatch', function ($e) {
@@ -66,11 +68,13 @@ class Module
             'factories' => array(
                 'wpAdminRoute' => function ($routePluginManager, $name="", $options=[]) {
                     $locator = $routePluginManager->getServiceLocator();
-                    $options = \Zend\Stdlib\ArrayUtils::merge($options, [
+                    $options = \Zend\Stdlib\ArrayUtils::merge(
+                        $options, [
                         "defaults" => [
-                            "plugin_prefix" => $locator->get("ApplicationConfig")["wordpress"]["plugin_prefix"]
+                            "route_prefix" => $locator->get("ApplicationConfig")["wordpress"]["route_prefix"]
                         ]
-                    ]);
+                        ]
+                    );
                     $route = Router\Http\WpAdminRoute::factory($options);
                     return $route;
                 },

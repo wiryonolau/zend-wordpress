@@ -83,7 +83,7 @@ class WpAdminRoute implements RouteInterface
             return null;
         }
 
-        if (preg_replace(sprintf('/^%s/', $this->defaults["plugin_prefix"]), '/', $params['page']) !== $this->route) {
+        if (preg_replace(sprintf('/^%s/', $this->defaults["route_prefix"]), '/', $params['page']) !== $this->route) {
             return null;
         }
 
@@ -109,7 +109,7 @@ class WpAdminRoute implements RouteInterface
 
         if (empty($params['use_just_route'])) {
             $route = array_values(array_filter(explode("/", $this->route)));
-            $route[0] = sprintf("%s%s", $this->defaults["plugin_prefix"], $route[0]);
+            $route[0] = sprintf("%s%s", $this->defaults["route_prefix"], $route[0]);
             $params = array_merge(
                 array("page" => implode("/", $route)),
                 $params

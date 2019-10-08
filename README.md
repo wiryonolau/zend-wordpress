@@ -22,6 +22,8 @@ $zendWordpress = new ZendWordpress\Application();
 $zendWordpress->setPluginDirectory(plugin_dir_path(__FILE__))
             ->setPluginFile(__FILE__)
             ->setPluginPrefix("my_plugin_prefix")
+            ->setTablePrefix("my_db_prefix")
+            ->setUseSession(true)
             ->run();
 ?>
 ```
