@@ -21,9 +21,9 @@ require_once plugin_dir_path(__FILE__). '/vendor/autoload.php';
 $zendWordpress = new ZendWordpress\Application();
 $zendWordpress->setPluginDirectory(plugin_dir_path(__FILE__))
             ->setPluginFile(__FILE__)
-            ->setPluginPrefix("my_plugin_prefix")
+            ->setRoutePrefix("my_plugin_prefix")
             ->setTablePrefix("my_db_prefix")
-            ->setUseSession(true)
+            ->enableSession()
             ->run();
 ?>
 ```
@@ -53,7 +53,7 @@ return [
             "plugin_admin_page" => [
                 "type" => "WpAdminRoute",
                 "options" => [
-                    "route" => "/plugin_admin_page"
+                    "route" => "/plugin_admin_page_without_route_prefix"
                     "defaults" => [
                         "controller" => "Your controller"
                         "action" => "action"
