@@ -1,3 +1,7 @@
+## 0.1.5 (October 27, 2019)
+  - Fix Readme
+  - Separate wordpress hooks to class
+
 ## 0.1.4 (October 03, 2019)
   - Add session
 
